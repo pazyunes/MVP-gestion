@@ -34,16 +34,20 @@ Reglas:
 /**
  * Modelo a usar.
  *
- * Usamos `gemini-1.5-flash` porque tiene tier gratuito generoso
- * (15 requests/min, 1500/día) y soporta visión.
+ * Por default `gemini-2.5-flash`: vigente, soporta visión, y mantiene
+ * tier gratuito (≈10 req/min, 250/día) en proyectos sin facturación.
  *
- * `gemini-2.0-flash` también funciona, pero requiere un proyecto de
- * Google Cloud con facturación habilitada — en cuentas free devuelve
- * 429 con "limit: 0".
+ * Notas:
+ * - `gemini-1.5-flash` y `gemini-1.5-pro` están deprecados y ya no
+ *   responden en el endpoint v1beta (404 not found).
+ * - `gemini-2.0-flash` requiere proyecto con facturación habilitada
+ *   (devuelve 429 con "limit: 0" en cuentas free).
  *
  * Se puede sobreescribir vía variable de entorno GEMINI_MODEL.
+ * Para ver qué modelos tiene disponibles tu API key, correr:
+ *   node scripts/list-models.mjs
  */
-const MODEL_NAME = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+const MODEL_NAME = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 const VALID_RUBROS: Rubro[] = ["plomeria", "electricidad", "no_cubierto"];
 const VALID_URGENCIAS: Urgencia[] = ["alta", "media", "baja"];
