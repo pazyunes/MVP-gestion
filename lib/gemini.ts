@@ -32,11 +32,18 @@ Reglas:
 - Si la foto no muestra un problema doméstico claro, devolvé rubro 'no_cubierto' y explicá brevemente.`;
 
 /**
- * Modelo a usar. `gemini-2.0-flash` es rápido y barato y soporta visión.
- * Si en el aula la cuenta gratuita no tuviera acceso, cambiar a
- * "gemini-1.5-flash" — la API es 100% compatible.
+ * Modelo a usar.
+ *
+ * Usamos `gemini-1.5-flash` porque tiene tier gratuito generoso
+ * (15 requests/min, 1500/día) y soporta visión.
+ *
+ * `gemini-2.0-flash` también funciona, pero requiere un proyecto de
+ * Google Cloud con facturación habilitada — en cuentas free devuelve
+ * 429 con "limit: 0".
+ *
+ * Se puede sobreescribir vía variable de entorno GEMINI_MODEL.
  */
-const MODEL_NAME = "gemini-2.0-flash";
+const MODEL_NAME = process.env.GEMINI_MODEL || "gemini-1.5-flash";
 
 const VALID_RUBROS: Rubro[] = ["plomeria", "electricidad", "no_cubierto"];
 const VALID_URGENCIAS: Urgencia[] = ["alta", "media", "baja"];
