@@ -58,6 +58,54 @@ Plataforma para resolver problemas del hogar (plomería y electricidad en esta p
 
    Abrir http://localhost:3000
 
+## Probar el endpoint sin pasar por la UI
+
+Útil para validar que la API key está bien configurada y que Gemini responde bien antes de tocar la pantalla.
+
+**Opción A — Script Node incluido:**
+
+```bash
+# 1) Asegurate de tener el server corriendo en otra terminal
+npm run dev
+
+# 2) En otra terminal, corré el script con cualquier foto de prueba
+node scripts/test-diagnose.mjs ./prueba.jpg "La canilla de la cocina pierde agua"
+```
+
+Salida esperada:
+
+```
+← 200 OK  (1432 ms)
+{
+  "rubro": "plomeria",
+  "urgencia": "media",
+  "costo_estimado_min": 15000,
+  "costo_estimado_max": 35000,
+  "descripcion_problema": "Se observa una canilla con goteo continuo...",
+  "recomendaciones": "Cerrá la llave de paso del agua si el goteo aumenta..."
+}
+```
+
+**Opción B — curl directo:**
+
+```bash
+# Convertir la imagen a base64 (Mac):
+B64=$(base64 -i ./prueba.jpg | tr -d '\n')
+
+curl -X POST http://localhost:3000/api/diagnose \
+  -H "Content-Type: application/json" \
+  -d "{\"image\":\"$B64\",\"mimeType\":\"image/jpeg\",\"description\":\"canilla goteando\"}"
+```
+
+**Códigos de respuesta:**
+
+| Código | Cuándo |
+|---|---|
+| `200` | Diagnóstico OK |
+| `400` | Body inválido o falta `image` / `mimeType` / `description` |
+| `500` | `GEMINI_API_KEY` no configurada en el server |
+| `502` | Gemini falló o devolvió un JSON no parseable |
+
 ## Desplegar en Vercel
 
 1. **Subir el código a GitHub** (repo público o privado).
@@ -87,9 +135,9 @@ Plataforma para resolver problemas del hogar (plomería y electricidad en esta p
 ## Estado del MVP
 
 - [x] Pantalla 1 — Home / Landing
-- [ ] Pantalla 2 — Pedir un servicio
+- [x] Pantalla 2 — Pedir un servicio
 - [ ] Pantalla 3 — Resultado del diagnóstico
 - [ ] Pantalla 4 — Profesionales recomendados
 - [ ] Pantalla 5 — Confirmación
-- [ ] Endpoint `/api/diagnose` con Gemini
+- [x] Endpoint `/api/diagnose` con Gemini
 - [ ] Datos mockeados de 6 profesionales
