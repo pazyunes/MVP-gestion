@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------
+   Estilos globales de Check.
+   - Definimos tipografía base, color de fondo y de texto.
+   - Suavizamos el scroll y la apariencia del foco para accesibilidad.
+   --------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  background-color: #f7fafb; /* brand-bg */
+  color: #1e293b;            /* brand-text */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus accesible para todos los elementos interactivos. */
+:focus-visible {
+  outline: 2px solid #028090; /* brand-teal */
+  outline-offset: 2px;
+  border-radius: 6px;
+}
