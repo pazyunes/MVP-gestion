@@ -4,7 +4,9 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { StepIndicator } from "@/components/StepIndicator";
 import { Button } from "@/components/ui/Button";
+import { Spinner } from "@/components/ui/Spinner";
 import type { DiagnosticoResult } from "@/lib/types";
 import { saveSession } from "@/lib/storage";
 
@@ -19,25 +21,48 @@ import { saveSession } from "@/lib/storage";
  * Es Client Component porque maneja estado, FileReader y navegación
  * imperativa.
  */
+
+/** Opciones del dropdown "Cargar foto de ejemplo" para acelerar la demo. */
+const SAMPLES = [
+  {
+    id: "plomeria",
+    label: "Caño con goteo",
+    descripcion:
+      "La canilla de la cocina pierde agua continuamente desde anoche.",
+  },
+  {
+    id: "electricidad",
+    label: "Enchufe quemado",
+    descripcion:
+      "Hay un enchufe que se calentó y tiene una marca negra alrededor.",
+  },
+  {
+    id: "otro",
+    label: "Problema no cubierto",
+    descripcion:
+      "Hay un mueble que se rompió en el living y no sé cómo arreglarlo.",
+  },
+] as const;
+
 export default function PedirPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Estado del formulario.
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null); // data URL para <img>
-  const [photoBase64, setPhotoBase64] = useState<string | null>(null);   // base64 limpio
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [photoMimeType, setPhotoMimeType] = useState<string | null>(null);
   const [descripcion, setDescripcion] = useState("");
   const [nombre, setNombre] = useState("");
   const [direccion, setDireccion] = useState("");
   const [rangoHorario, setRangoHorario] = useState("");
 
-  // Estado de la llamada a la IA.
+  // Estado de la llamada.
   const [loading, setLoading] = useState(false);
+  const [loadingSample, setLoadingSample] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Habilitamos "Analizar con IA" solo cuando hay foto + descripción.
-  // Nombre, dirección y rango horario son opcionales para no frenar la demo.
   const canSubmit =
     !!photoBase64 && descripcion.trim().length > 0 && !loading;
 
@@ -49,9 +74,6 @@ export default function PedirPage() {
       return;
     }
     setError(null);
-
-    // FileReader nos da una data URL completa (data:image/...;base64,XXXX).
-    // Guardamos la URL completa para el <img> y solo el base64 para el API.
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;
@@ -69,13 +91,43 @@ export default function PedirPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
+  /** Carga una foto de ejemplo desde /api/sample-image (proxy a Unsplash). */
+  async function loadSample(id: (typeof SAMPLES)[number]["id"]) {
+    setLoadingSample(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/sample-image?id=${id}`);
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `Error ${res.status}`);
+      }
+      const { base64, mimeType } = (await res.json()) as {
+        base64: string;
+        mimeType: string;
+      };
+      setPhotoBase64(base64);
+      setPhotoMimeType(mimeType);
+      setPhotoPreview(`data:${mimeType};base64,${base64}`);
+      // Pre-llenamos la descripción para que la demo sea de un click.
+      const sample = SAMPLES.find((s) => s.id === id);
+      if (sample) setDescripcion(sample.descripcion);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "No se pudo cargar la foto de ejemplo.";
+      setError(message);
+    } finally {
+      setLoadingSample(false);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit || !photoBase64 || !photoMimeType) return;
 
     setLoading(true);
     setError(null);
-
     try {
       const res = await fetch("/api/diagnose", {
         method: "POST",
@@ -96,8 +148,8 @@ export default function PedirPage() {
 
       const diagnostico: DiagnosticoResult = await res.json();
 
-      // Guardamos todo el contexto del pedido en sessionStorage para que
-      // las pantallas siguientes (3, 4, 5) puedan consumirlo.
+      // Guardamos el contexto del pedido en sessionStorage para las
+      // pantallas siguientes (3, 4, 5).
       saveSession({
         form: { nombre, direccion, rangoHorario, descripcion },
         fotoDataUrl: photoPreview,
@@ -120,7 +172,9 @@ export default function PedirPage() {
     <>
       <Header />
 
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10 md:py-12">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10 md:py-12 animate-fade-in">
+        <StepIndicator current={1} />
+
         <h1 className="text-3xl md:text-4xl font-extrabold text-brand-dark">
           Pedir un servicio
         </h1>
@@ -140,6 +194,32 @@ export default function PedirPage() {
             estimación; el profesional confirma todo en el lugar.
           </p>
         </div>
+
+        {/* Cargar foto de ejemplo (atajo para la demo) */}
+        <details className="mt-6 group">
+          <summary className="cursor-pointer text-sm font-semibold text-brand-teal hover:text-brand-dark inline-flex items-center gap-1.5">
+            <span>📌 Cargar foto de ejemplo</span>
+            <span className="text-xs text-brand-muted font-normal">
+              (atajos para la demo)
+            </span>
+          </summary>
+          <div className="mt-3 grid sm:grid-cols-3 gap-2">
+            {SAMPLES.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                disabled={loadingSample}
+                onClick={() => loadSample(s.id)}
+                className="text-left text-xs rounded-xl border border-brand-soft bg-white px-3 py-2 hover:border-brand-teal hover:bg-brand-soft/40 disabled:opacity-50 transition-colors"
+              >
+                <div className="font-semibold text-brand-text">{s.label}</div>
+                <div className="text-brand-muted mt-0.5 line-clamp-2">
+                  {s.descripcion}
+                </div>
+              </button>
+            ))}
+          </div>
+        </details>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           {/* Foto + preview */}
@@ -162,17 +242,26 @@ export default function PedirPage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="mt-2 w-full border-2 border-dashed border-brand-teal/40 rounded-2xl py-10 px-4 text-center hover:bg-brand-soft/50 transition-colors"
+                disabled={loadingSample}
+                className="mt-2 w-full border-2 border-dashed border-brand-teal/40 rounded-2xl py-10 px-4 text-center hover:bg-brand-soft/50 transition-colors disabled:opacity-50"
               >
-                <div className="text-3xl mb-2" aria-hidden="true">
-                  📷
-                </div>
-                <p className="font-semibold text-brand-teal">
-                  Subí una foto del problema
-                </p>
-                <p className="text-xs text-brand-muted mt-1">
-                  En mobile podés sacarla con la cámara directamente
-                </p>
+                {loadingSample ? (
+                  <div className="flex items-center justify-center gap-2 text-brand-teal">
+                    <Spinner /> Cargando foto de ejemplo…
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-3xl mb-2" aria-hidden="true">
+                      📷
+                    </div>
+                    <p className="font-semibold text-brand-teal">
+                      Subí una foto del problema
+                    </p>
+                    <p className="text-xs text-brand-muted mt-1">
+                      En mobile podés sacarla con la cámara directamente
+                    </p>
+                  </>
+                )}
               </button>
             ) : (
               <div className="mt-2 relative rounded-2xl overflow-hidden border border-brand-soft bg-black/5">
@@ -266,7 +355,7 @@ export default function PedirPage() {
           >
             {loading ? (
               <>
-                <Spinner /> Analizando con IA...
+                <Spinner /> Analizando con IA…
               </>
             ) : (
               <>Analizar con IA</>
@@ -286,7 +375,7 @@ export default function PedirPage() {
   );
 }
 
-/* ───── helpers de UI locales ───── */
+/* ───── helper local ───── */
 
 function Field({
   label,
@@ -313,31 +402,5 @@ function Field({
       {children}
       {hint && <p className="mt-1 text-xs text-brand-muted">{hint}</p>}
     </div>
-  );
-}
-
-function Spinner() {
-  return (
-    <svg
-      className="animate-spin h-4 w-4"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeOpacity="0.25"
-        strokeWidth="3"
-      />
-      <path
-        d="M22 12a10 10 0 00-10-10"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }

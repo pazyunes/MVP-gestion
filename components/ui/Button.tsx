@@ -13,7 +13,7 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
  * - coral: acento coral, para acciones destacadas (ej: "Confirmar servicio")
  */
 
-type Variant = "primary" | "secondary" | "coral";
+type Variant = "primary" | "secondary" | "ghost" | "coral";
 type Size = "md" | "lg";
 
 const baseClasses =
@@ -29,6 +29,8 @@ const variantClasses: Record<Variant, string> = {
     "bg-brand-teal text-white hover:bg-brand-dark shadow-soft hover:shadow-lg",
   secondary:
     "bg-white text-brand-teal border-2 border-brand-teal hover:bg-brand-soft",
+  ghost:
+    "bg-transparent text-brand-teal hover:bg-brand-soft",
   coral:
     "bg-brand-coral text-white hover:brightness-95 shadow-soft hover:shadow-lg",
 };
