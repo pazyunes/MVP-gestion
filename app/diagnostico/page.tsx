@@ -122,13 +122,6 @@ export default function DiagnosticoPage() {
           </div>
         </Card>
 
-        {/* Disclaimer */}
-        <p className="mt-4 text-xs text-brand-muted leading-relaxed">
-          ⚠️ Este diagnóstico es una <strong>estimación generada por IA</strong>.
-          El profesional confirmará el análisis al llegar y te dará el costo
-          final.
-        </p>
-
         {/* Botones */}
         <div className="mt-8 flex flex-col sm:flex-row gap-3">
           <Button href="/profesionales" size="lg" className="w-full sm:flex-1">

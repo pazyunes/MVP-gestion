@@ -14,36 +14,9 @@ import { saveSession } from "@/lib/storage";
  * Pantalla 2 — Pedir un servicio.
  *
  * Form con foto (preview), descripción, datos del usuario y rango horario.
- * Al darle "Analizar con IA" llama a /api/diagnose con la imagen en base64
- * y la descripción, guarda el resultado en sessionStorage y navega a
- * /diagnostico.
- *
- * Es Client Component porque maneja estado, FileReader y navegación
- * imperativa.
+ * Al darle "Analizar" llama a /api/diagnose, guarda el resultado en
+ * sessionStorage y navega a /diagnostico.
  */
-
-/** Opciones del dropdown "Cargar foto de ejemplo" para acelerar la demo. */
-const SAMPLES = [
-  {
-    id: "plomeria",
-    label: "Caño con goteo",
-    descripcion:
-      "La canilla de la cocina pierde agua continuamente desde anoche.",
-  },
-  {
-    id: "electricidad",
-    label: "Enchufe quemado",
-    descripcion:
-      "Hay un enchufe que se calentó y tiene una marca negra alrededor.",
-  },
-  {
-    id: "otro",
-    label: "Problema no cubierto",
-    descripcion:
-      "Hay un mueble que se rompió en el living y no sé cómo arreglarlo.",
-  },
-] as const;
-
 export default function PedirPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -57,12 +30,10 @@ export default function PedirPage() {
   const [direccion, setDireccion] = useState("");
   const [rangoHorario, setRangoHorario] = useState("");
 
-  // Estado de la llamada.
   const [loading, setLoading] = useState(false);
-  const [loadingSample, setLoadingSample] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Habilitamos "Analizar con IA" solo cuando hay foto + descripción.
+  // El botón "Analizar" se habilita solo cuando hay foto + descripción.
   const canSubmit =
     !!photoBase64 && descripcion.trim().length > 0 && !loading;
 
@@ -91,37 +62,6 @@ export default function PedirPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
-  /** Carga una foto de ejemplo desde /api/sample-image (proxy a Unsplash). */
-  async function loadSample(id: (typeof SAMPLES)[number]["id"]) {
-    setLoadingSample(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/sample-image?id=${id}`);
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => ({}));
-        throw new Error(errBody.error || `Error ${res.status}`);
-      }
-      const { base64, mimeType } = (await res.json()) as {
-        base64: string;
-        mimeType: string;
-      };
-      setPhotoBase64(base64);
-      setPhotoMimeType(mimeType);
-      setPhotoPreview(`data:${mimeType};base64,${base64}`);
-      // Pre-llenamos la descripción para que la demo sea de un click.
-      const sample = SAMPLES.find((s) => s.id === id);
-      if (sample) setDescripcion(sample.descripcion);
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "No se pudo cargar la foto de ejemplo.";
-      setError(message);
-    } finally {
-      setLoadingSample(false);
-    }
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit || !photoBase64 || !photoMimeType) return;
@@ -148,8 +88,6 @@ export default function PedirPage() {
 
       const diagnostico: DiagnosticoResult = await res.json();
 
-      // Guardamos el contexto del pedido en sessionStorage para las
-      // pantallas siguientes (3, 4, 5).
       saveSession({
         form: { nombre, direccion, rangoHorario, descripcion },
         fotoDataUrl: photoPreview,
@@ -183,44 +121,6 @@ export default function PedirPage() {
           diagnóstico antes de mandar al profesional.
         </p>
 
-        {/* Banner de transparencia: el usuario tiene que saber que es IA real */}
-        <div className="mt-6 rounded-xl bg-brand-soft border border-brand-teal/30 p-4 text-sm text-brand-dark flex gap-3">
-          <span aria-hidden="true" className="text-base leading-none mt-0.5">
-            🤖
-          </span>
-          <p>
-            <strong>Transparencia:</strong> el diagnóstico inicial lo hace una
-            IA real (Google Gemini) analizando tu foto y descripción. Es una
-            estimación; el profesional confirma todo en el lugar.
-          </p>
-        </div>
-
-        {/* Cargar foto de ejemplo (atajo para la demo) */}
-        <details className="mt-6 group">
-          <summary className="cursor-pointer text-sm font-semibold text-brand-teal hover:text-brand-dark inline-flex items-center gap-1.5">
-            <span>📌 Cargar foto de ejemplo</span>
-            <span className="text-xs text-brand-muted font-normal">
-              (atajos para la demo)
-            </span>
-          </summary>
-          <div className="mt-3 grid sm:grid-cols-3 gap-2">
-            {SAMPLES.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                disabled={loadingSample}
-                onClick={() => loadSample(s.id)}
-                className="text-left text-xs rounded-xl border border-brand-soft bg-white px-3 py-2 hover:border-brand-teal hover:bg-brand-soft/40 disabled:opacity-50 transition-colors"
-              >
-                <div className="font-semibold text-brand-text">{s.label}</div>
-                <div className="text-brand-muted mt-0.5 line-clamp-2">
-                  {s.descripcion}
-                </div>
-              </button>
-            ))}
-          </div>
-        </details>
-
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           {/* Foto + preview */}
           <div>
@@ -242,26 +142,17 @@ export default function PedirPage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={loadingSample}
-                className="mt-2 w-full border-2 border-dashed border-brand-teal/40 rounded-2xl py-10 px-4 text-center hover:bg-brand-soft/50 transition-colors disabled:opacity-50"
+                className="mt-2 w-full border-2 border-dashed border-brand-teal/40 rounded-2xl py-10 px-4 text-center hover:bg-brand-soft/50 transition-colors"
               >
-                {loadingSample ? (
-                  <div className="flex items-center justify-center gap-2 text-brand-teal">
-                    <Spinner /> Cargando foto de ejemplo…
-                  </div>
-                ) : (
-                  <>
-                    <div className="text-3xl mb-2" aria-hidden="true">
-                      📷
-                    </div>
-                    <p className="font-semibold text-brand-teal">
-                      Subí una foto del problema
-                    </p>
-                    <p className="text-xs text-brand-muted mt-1">
-                      En mobile podés sacarla con la cámara directamente
-                    </p>
-                  </>
-                )}
+                <div className="text-3xl mb-2" aria-hidden="true">
+                  📷
+                </div>
+                <p className="font-semibold text-brand-teal">
+                  Subí una foto del problema
+                </p>
+                <p className="text-xs text-brand-muted mt-1">
+                  En mobile podés sacarla con la cámara directamente
+                </p>
               </button>
             ) : (
               <div className="mt-2 relative rounded-2xl overflow-hidden border border-brand-soft bg-black/5">
@@ -287,7 +178,6 @@ export default function PedirPage() {
             label="Descripción del problema"
             required
             htmlFor="descripcion"
-            hint="Cuanto más específico, mejor diagnostica la IA."
           >
             <textarea
               id="descripcion"
@@ -355,10 +245,10 @@ export default function PedirPage() {
           >
             {loading ? (
               <>
-                <Spinner /> Analizando con IA…
+                <Spinner /> Analizando…
               </>
             ) : (
-              <>Analizar con IA</>
+              <>Analizar</>
             )}
           </Button>
 
