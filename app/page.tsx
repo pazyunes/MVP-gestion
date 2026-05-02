@@ -28,11 +28,7 @@ export default function HomePage() {
             className="absolute inset-0 bg-gradient-to-b from-brand-soft via-white to-white"
           />
           <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-20 md:pt-24 md:pb-28 text-center">
-            <span className="inline-block px-3 py-1 rounded-full bg-white text-brand-teal text-xs font-semibold tracking-wide uppercase shadow-soft">
-              MVP — Servicios para el hogar
-            </span>
-
-            <h1 className="mt-6 text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-brand-dark">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-brand-dark">
               Check
             </h1>
 
@@ -45,8 +41,8 @@ export default function HomePage() {
             </p>
 
             <p className="mt-4 text-base text-brand-muted max-w-xl mx-auto">
-              Subí una foto, te decimos qué pasa y mandamos un profesional
-              verificado a la hora exacta que necesitás.
+              Te decimos qué pasa y mandamos un profesional verificado a la
+              hora exacta que necesitás.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -98,7 +94,7 @@ export default function HomePage() {
             <FeatureCard
               icon={<IconBrain />}
               title="Diagnóstico con IA"
-              description="Subí una foto del problema y nuestra IA identifica el rubro, la urgencia y el rango de costo en segundos."
+              description="Nuestra IA identifica el rubro, la urgencia y el rango de costo en segundos."
             />
             <FeatureCard
               icon={<IconShield />}
@@ -120,8 +116,8 @@ export default function HomePage() {
               ¿Tenés un problema en casa ahora?
             </h2>
             <p className="mt-3 text-brand-soft/90 max-w-xl mx-auto">
-              Empezá con una foto. En menos de un minuto sabés qué pasa, cuánto
-              sale y quién lo puede resolver.
+              En menos de un minuto sabés qué pasa, cuánto sale y quién lo
+              puede resolver.
             </p>
             <div className="mt-6 flex justify-center">
               <Button href="/pedir" variant="coral" size="lg">

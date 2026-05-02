@@ -117,8 +117,8 @@ export default function PedirPage() {
           Pedir un servicio
         </h1>
         <p className="mt-2 text-brand-muted">
-          Subí una foto del problema y contanos qué pasa. Hacemos un primer
-          diagnóstico antes de mandar al profesional.
+          Contanos qué pasa. Hacemos un primer diagnóstico antes de mandar al
+          profesional.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
