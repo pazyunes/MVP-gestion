@@ -70,6 +70,22 @@ export default function DiagnosticoPage() {
           Esto fue lo que detectó la IA a partir de tu foto y descripción.
         </p>
 
+        {/* Disclaimer de IA — visible pero no agresivo */}
+        <div className="mt-6 rounded-2xl bg-brand-soft/60 border border-brand-teal/20 px-4 py-3 flex gap-3">
+          <span
+            className="shrink-0 mt-0.5 text-brand-teal"
+            aria-hidden="true"
+          >
+            <InfoIcon />
+          </span>
+          <p className="text-sm text-brand-text leading-relaxed">
+            <strong className="text-brand-dark">Estimación con IA:</strong>{" "}
+            este diagnóstico es una primera aproximación generada
+            automáticamente. El profesional verifica el problema en el lugar y
+            te confirma el costo final antes de empezar.
+          </p>
+        </div>
+
         {/* Foto */}
         {fotoDataUrl && (
           <div className="mt-6 rounded-2xl overflow-hidden border border-brand-soft shadow-soft bg-black/5">
@@ -100,6 +116,10 @@ export default function DiagnosticoPage() {
             <p className="mt-1 text-2xl md:text-3xl font-extrabold text-brand-dark">
               {formatARS(diagnostico.costo_estimado_min)} —{" "}
               {formatARS(diagnostico.costo_estimado_max)}
+            </p>
+            <p className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-teal">
+              <CheckIconSm />
+              Con garantía Check incluida
             </p>
           </div>
 
@@ -189,12 +209,22 @@ function NoCubiertoView({
         </Card>
 
         <Card className="mt-6 p-6 bg-brand-soft/50 border-brand-teal/30">
-          <h2 className="text-lg font-bold text-brand-dark">
-            ¿Querés que te avisemos cuando esté disponible?
-          </h2>
-          <p className="mt-1 text-sm text-brand-muted">
-            Dejanos tu email y te escribimos apenas sumemos el rubro.
-          </p>
+          <div className="flex items-start gap-3">
+            <span
+              className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white text-brand-teal border border-brand-teal/30"
+              aria-hidden="true"
+            >
+              <BellIcon />
+            </span>
+            <div className="flex-1">
+              <h2 className="text-lg font-bold text-brand-dark">
+                Avisame cuando esté disponible
+              </h2>
+              <p className="mt-1 text-sm text-brand-muted">
+                Dejanos tu email y te escribimos apenas sumemos el rubro.
+              </p>
+            </div>
+          </div>
 
           {!submitted ? (
             <form
@@ -204,7 +234,11 @@ function NoCubiertoView({
               }}
               className="mt-4 flex flex-col sm:flex-row gap-2"
             >
+              <label htmlFor="notify-email" className="sr-only">
+                Email para notificación
+              </label>
               <input
+                id="notify-email"
                 type="email"
                 required
                 value={email}
@@ -217,9 +251,25 @@ function NoCubiertoView({
               </Button>
             </form>
           ) : (
-            <div className="mt-4 p-3 rounded-xl bg-white border border-brand-teal/30 text-sm text-brand-dark">
-              ✅ Listo. Te avisamos a <strong>{email}</strong> apenas
-              sumemos el rubro.
+            <div
+              role="status"
+              className="mt-4 flex items-start gap-3 p-4 rounded-xl bg-white border border-brand-teal/30"
+            >
+              <span
+                className="shrink-0 mt-0.5 inline-flex items-center justify-center w-6 h-6 rounded-full bg-brand-teal text-white"
+                aria-hidden="true"
+              >
+                <CheckIconSm />
+              </span>
+              <div className="text-sm text-brand-text">
+                <p className="font-semibold text-brand-dark">
+                  Te vamos a avisar
+                </p>
+                <p className="mt-0.5 text-brand-muted">
+                  Te escribimos a <strong>{email}</strong> apenas sumemos el
+                  rubro.
+                </p>
+              </div>
             </div>
           )}
         </Card>
@@ -268,5 +318,78 @@ function DotIcon() {
       aria-hidden="true"
       className="inline-block w-1.5 h-1.5 rounded-full bg-current"
     />
+  );
+}
+
+function CheckIconSm() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M5 12l5 5L20 7"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function BellIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M18 16v-5a6 6 0 10-12 0v5l-2 2v1h16v-1l-2-2z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M10 21a2 2 0 004 0"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function InfoIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M12 11v5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <circle cx="12" cy="8" r="1" fill="currentColor" />
+    </svg>
   );
 }

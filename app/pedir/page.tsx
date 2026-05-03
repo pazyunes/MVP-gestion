@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -32,6 +32,12 @@ export default function PedirPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Slots de hora exacta calculados en cliente para evitar mismatch de hidratación.
+  const [timeSlots, setTimeSlots] = useState<string[]>([]);
+  useEffect(() => {
+    setTimeSlots(generateTimeSlots(new Date()));
+  }, []);
 
   // El botón "Analizar" se habilita solo cuando hay foto + descripción.
   const canSubmit =
@@ -120,6 +126,19 @@ export default function PedirPage() {
           Contanos qué pasa. Hacemos un primer diagnóstico antes de mandar al
           profesional.
         </p>
+
+        {/* Mensaje de transparencia de costo — responde al hallazgo "miedo a que te claven" */}
+        <div className="mt-6 rounded-2xl bg-white border border-brand-coral/30 px-4 py-3 flex gap-3 shadow-soft/50">
+          <span className="shrink-0 mt-0.5 text-brand-coral" aria-hidden="true">
+            <DollarSignIcon />
+          </span>
+          <p className="text-sm text-brand-text leading-relaxed">
+            <strong className="text-brand-dark">Sin sorpresas:</strong> vas a
+            ver el rango de costo estimado antes de confirmar nada. La IA
+            analiza la foto y te da una estimación realista basada en el
+            problema.
+          </p>
+        </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           {/* Foto + preview */}
@@ -213,8 +232,12 @@ export default function PedirPage() {
             />
           </Field>
 
-          {/* Rango horario */}
-          <Field label="Rango horario preferido" htmlFor="rango">
+          {/* Hora exacta — responde al hallazgo "la hora exacta es diferencial" */}
+          <Field
+            label="¿Cuándo te viene mejor?"
+            htmlFor="rango"
+            hint="Te confirmamos la hora exacta de llegada del profesional, no una franja amplia."
+          >
             <select
               id="rango"
               value={rangoHorario}
@@ -222,9 +245,11 @@ export default function PedirPage() {
               className="mt-2 w-full rounded-xl border border-brand-soft bg-white px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-teal"
             >
               <option value="">Lo antes posible</option>
-              <option value="manana">Mañana (8 a 12 h)</option>
-              <option value="tarde">Tarde (12 a 18 h)</option>
-              <option value="noche">Noche (18 a 22 h)</option>
+              {timeSlots.map((slot) => (
+                <option key={slot} value={slot}>
+                  {slot}
+                </option>
+              ))}
             </select>
           </Field>
 
@@ -236,6 +261,20 @@ export default function PedirPage() {
               {error}
             </div>
           )}
+
+          {/* Banner de Garantía Check — refuerzo de confianza pre-submit */}
+          <div className="rounded-2xl bg-brand-soft border border-brand-teal/30 px-4 py-3 flex gap-3">
+            <span
+              className="shrink-0 mt-0.5 text-brand-teal"
+              aria-hidden="true"
+            >
+              <ShieldCheckIcon />
+            </span>
+            <p className="text-sm text-brand-dark leading-relaxed">
+              <strong>Garantía Check:</strong> si el problema no se resuelve,
+              mandamos otro profesional sin costo.
+            </p>
+          </div>
 
           <Button
             type="submit"
@@ -265,7 +304,7 @@ export default function PedirPage() {
   );
 }
 
-/* ───── helper local ───── */
+/* ───── helpers locales ───── */
 
 function Field({
   label,
@@ -292,5 +331,95 @@ function Field({
       {children}
       {hint && <p className="mt-1 text-xs text-brand-muted">{hint}</p>}
     </div>
+  );
+}
+
+/**
+ * Genera 6 slots horarios consecutivos de hora en hora a partir de la hora
+ * actual, dentro de la franja laboral 09–20.
+ * - Si la hora actual es ≥ 20, salta entera al día siguiente.
+ * - Si la franja de hoy se agota (>20), continúa al día siguiente desde 09:00.
+ */
+function generateTimeSlots(now: Date): string[] {
+  const WORK_START = 9;
+  const WORK_END = 20; // último slot que se ofrece hoy
+  const SLOTS = 6;
+
+  const slots: string[] = [];
+  let day: "Hoy" | "Mañana" = "Hoy";
+  let hour = now.getHours() + 1;
+
+  if (now.getHours() >= WORK_END || hour > WORK_END) {
+    day = "Mañana";
+    hour = WORK_START;
+  } else if (hour < WORK_START) {
+    hour = WORK_START;
+  }
+
+  while (slots.length < SLOTS) {
+    if (hour > WORK_END) {
+      day = "Mañana";
+      hour = WORK_START;
+    }
+    slots.push(`${day} ${String(hour).padStart(2, "0")}:00`);
+    hour++;
+  }
+
+  return slots;
+}
+
+function ShieldCheckIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 12l2 2 4-4"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function DollarSignIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <line
+        x1="12"
+        y1="2"
+        x2="12"
+        y2="22"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path
+        d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

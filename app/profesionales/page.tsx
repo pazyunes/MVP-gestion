@@ -132,6 +132,9 @@ function ProfCard({
                 Verificado
               </Badge>
             )}
+            <Badge color="teal" icon={<ShieldIcon />}>
+              Garantía Check
+            </Badge>
           </div>
           <p className="text-sm text-brand-muted">{prof.especialidad}</p>
           <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-brand-muted">
@@ -207,6 +210,26 @@ function CheckIcon() {
         d="M5 12l5 5L20 7"
         stroke="currentColor"
         strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+        stroke="currentColor"
+        strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

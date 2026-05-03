@@ -165,19 +165,25 @@ export default function ConfirmacionPage() {
           </div>
         </Card>
 
-        {/* Garantía destacada */}
-        <Card className="mt-6 p-6 bg-brand-dark border-brand-dark text-white shadow-soft">
-          <div className="flex gap-3">
-            <span className="text-2xl" aria-hidden="true">
-              🛡️
+        {/* Garantía destacada — card prominente con borde teal e ícono grande */}
+        <Card className="mt-6 p-6 bg-white border-2 border-brand-teal shadow-soft">
+          <div className="flex gap-4 items-start">
+            <span
+              className="shrink-0 inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-soft text-brand-teal"
+              aria-hidden="true"
+            >
+              <ShieldCheckLargeIcon />
             </span>
-            <div>
-              <h2 className="text-lg font-bold">
+            <div className="flex-1">
+              <h2 className="text-xl font-extrabold text-brand-dark">
                 Garantía Check
               </h2>
-              <p className="mt-1 text-sm text-brand-soft/90 leading-relaxed">
-                Si el problema no se resuelve, mandamos otro profesional sin
-                costo. Tu tranquilidad es nuestra prioridad.
+              <p className="mt-1.5 text-sm text-brand-text leading-relaxed">
+                Si el problema no se resuelve,{" "}
+                <strong className="text-brand-teal">
+                  mandamos otro profesional sin costo
+                </strong>
+                . Tu tranquilidad es nuestra prioridad.
               </p>
             </div>
           </div>
@@ -272,5 +278,32 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
       </span>
       <span className="leading-relaxed">{children}</span>
     </li>
+  );
+}
+
+function ShieldCheckLargeIcon() {
+  return (
+    <svg
+      width="32"
+      height="32"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 12l2 2 4-4"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

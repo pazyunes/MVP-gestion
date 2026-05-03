@@ -72,6 +72,10 @@ export default function HomePage() {
                 Ver cómo funciona
               </a>
             </div>
+
+            <p className="mt-5 text-xs text-brand-muted">
+              Sin descargas. Abrí desde cualquier navegador.
+            </p>
           </div>
         </section>
 
